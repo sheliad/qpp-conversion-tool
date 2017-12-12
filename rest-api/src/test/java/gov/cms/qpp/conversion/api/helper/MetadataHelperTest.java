@@ -1,5 +1,6 @@
 package gov.cms.qpp.conversion.api.helper;
 
+import gov.cms.qpp.conversion.api.model.Constants;
 import gov.cms.qpp.conversion.api.model.Metadata;
 import gov.cms.qpp.conversion.decode.ClinicalDocumentDecoder;
 import gov.cms.qpp.conversion.model.Node;
@@ -33,7 +34,7 @@ class MetadataHelperTest {
 		node.putValue(ClinicalDocumentDecoder.PROGRAM_NAME, "CPCPLUS");
 
 		Metadata metadata = MetadataHelper.generateMetadata(node, MetadataHelper.Outcome.SUCCESS);
-		assertThat(metadata.getCpc()).isTrue();
+		assertThat(metadata.getCpc()).startsWith(Constants.CPC_DYNAMO_PARTITION_START);
 	}
 
 	@Test
@@ -45,7 +46,7 @@ class MetadataHelperTest {
 		node.addChildNode(child);
 
 		Metadata metadata = MetadataHelper.generateMetadata(node, MetadataHelper.Outcome.SUCCESS);
-		assertThat(metadata.getCpc()).isTrue();
+		assertThat(metadata.getCpc()).startsWith(Constants.CPC_DYNAMO_PARTITION_START);
 	}
 
 	@Test
@@ -56,7 +57,7 @@ class MetadataHelperTest {
 		node.addChildNode(child);
 
 		Metadata metadata = MetadataHelper.generateMetadata(node, MetadataHelper.Outcome.SUCCESS);
-		assertThat(metadata.getCpc()).isFalse();
+		assertThat(metadata.getCpc()).isNull();
 	}
 
 	@Test
