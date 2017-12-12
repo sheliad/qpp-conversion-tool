@@ -18,6 +18,11 @@ public interface DbService {
 	 */
 	CompletableFuture<Metadata> write(Metadata meta);
 
+	/**
+	 * Retrieves a {@link Metadata} list from the database
+	 *
+	 * @return data to return
+	 */
 	List<Metadata> getUnprocessedCpcPlusMetaData();
 
 	/**
@@ -27,4 +32,12 @@ public interface DbService {
 	 * @return File Location Id
 	 */
 	String getFileSubmissionLocationId(String uuid);
+
+	/**
+	 * Retrieves the {@link Metadata} by Uuid.
+	 *
+	 * @param Uuid Identifier of {@link Metadata}
+	 * @return Metadata if found
+	 */
+	Metadata getMetadataById(String Uuid);
 }

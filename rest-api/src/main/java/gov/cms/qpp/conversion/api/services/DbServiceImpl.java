@@ -82,13 +82,23 @@ public class DbServiceImpl extends AnyOrderActionService<Metadata, Metadata>
 	}
 
 	/**
-	 * Queries the DynamoDb table for a {@link Metadata} with a specific uuid
+	 * Queries the database table for a {@link Metadata} with a specific uuid
 	 *
 	 * @param uuid id to query on
-	 * @return location  id of the submitted file
+	 * @return location id of the submitted file
 	 */
 	public String getFileSubmissionLocationId(String uuid) {
 		return mapper.load(Metadata.class, uuid).getSubmissionLocator();
+	}
+
+	/**
+	 * Queries the database table for a {@link Metadata} with a specific uuid
+	 *
+	 * @param uuid Identifier to query on
+	 * @return Metadata found
+	 */
+	public Metadata getMetadataById(String uuid) {
+		return mapper.load(Metadata.class, uuid);
 	}
 
 	/**

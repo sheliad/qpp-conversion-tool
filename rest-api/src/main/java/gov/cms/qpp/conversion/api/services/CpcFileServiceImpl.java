@@ -53,4 +53,21 @@ public class CpcFileServiceImpl implements CpcFileService {
 	private List<UnprocessedCpcFileData> transformMetaDataToUnprocessedCpcFileData(List<Metadata> metadataList) {
 		return metadataList.stream().map(UnprocessedCpcFileData::new).collect(Collectors.toList());
 	}
+
+	/**
+	 * Process to ensure the file is an unprocessed cpc+ file and marks the file as processed
+	 *
+	 * @param fileId
+	 */
+	public String processFileById(String fileId) {
+		String message = "The given id is invalid and was not find the cpc+ data";
+		Metadata metadata = dbService.getMetadataById(fileId);
+		if (metadata != null && metadata.getCpc() != null && !metadata.getCpcProcessed()) {
+			metadata.setCpcProcessed(true);
+			dbService.write(metadata);
+			message = "The data will be set as processed!";
+		}
+
+		return message;
+	}
 }

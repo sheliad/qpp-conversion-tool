@@ -23,4 +23,11 @@ public interface CpcFileService {
 	 * @return file returned as an {@link InputStream}
 	 */
 	InputStream getFileById(String fileId);
+
+	/**
+	 *
+	 * @param fileId
+	 * @return
+	 */
+	String processFileById(String fileId);
 }
