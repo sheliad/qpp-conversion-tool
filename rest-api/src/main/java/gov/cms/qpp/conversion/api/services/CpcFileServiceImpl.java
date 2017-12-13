@@ -60,12 +60,12 @@ public class CpcFileServiceImpl implements CpcFileService {
 	 * @param fileId
 	 */
 	public String processFileById(String fileId) {
-		String message = "The given id is invalid and was not find the cpc+ data";
+		String message = "The id is invalid and was not found in the database";
 		Metadata metadata = dbService.getMetadataById(fileId);
 		if (metadata != null && metadata.getCpc() != null && !metadata.getCpcProcessed()) {
 			metadata.setCpcProcessed(true);
 			dbService.write(metadata);
-			message = "The data will be set as processed!";
+			message = "The id was found and will be updated as processed.";
 		}
 
 		return message;

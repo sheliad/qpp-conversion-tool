@@ -81,7 +81,9 @@ public class CpcFileControllerV1 {
 		API_LOG.info("CPC+ file request received");
 		String message = cpcFileService.processFileById(fileId);
 		API_LOG.info("CPC+ file request succeeded");
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.TEXT_PLAIN);
 
-		return new ResponseEntity<>(message, HttpStatus.OK);
+		return new ResponseEntity<>(message, httpHeaders, HttpStatus.OK);
 	}
 }
