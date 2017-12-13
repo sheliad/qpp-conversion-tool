@@ -21,6 +21,7 @@ import org.springframework.core.task.TaskExecutor;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -45,6 +46,8 @@ class DbServiceImplTest {
 
 	@Mock
 	private Environment environment;
+
+	private static final String FAKE_UUID = "1337-f4ke-uuid";
 
 	@BeforeEach
 	void before() {
@@ -103,15 +106,24 @@ class DbServiceImplTest {
 
 	@Test
 	void testGetFileSubmissionLocationId() {
-		String fakeUuid = "1337-f4ke-uuid";
-
 		when(dbMapper.load(eq(Metadata.class), anyString())).thenReturn(buildFakeMetadataWithSubmissionIdOnly());
 
-		String fakeSubmissionId = underTest.getFileSubmissionLocationId(fakeUuid);
+		String fakeSubmissionId = underTest.getFileSubmissionLocationId(FAKE_UUID);
 
 		verify(dbMapper, times(1)).load(any(Class.class), anyString());
 
 		assertThat(fakeSubmissionId).isEqualTo("1337");
+	}
+
+	@Test
+	void testGetMetadataById() {
+		when(dbMapper.load(eq(Metadata.class), anyString())).thenReturn(buildFakeMetadataWithSubmissionIdOnly());
+
+		Metadata metadata = underTest.getMetadataById(FAKE_UUID);
+
+		verify(dbMapper, times(1)).load(any(Class.class), anyString());
+
+		assertThat(metadata).isNotNull();
 	}
 
 	private Metadata writeMeta() {

@@ -35,6 +35,8 @@ class CpcFileServiceImplTest {
 	@Mock
 	private StorageService storageService;
 
+	private static final String MEEP = "meep";
+
 	private static Stream<Integer> numberOfMetadata() {
 		return Stream.of(1, 4, 26);
 	}
@@ -67,7 +69,7 @@ class CpcFileServiceImplTest {
 	void testProcessFileByIdSuccess() {
 		when(dbService.getMetadataById(anyString())).thenReturn(createMockedMetadata("true", false));
 
-		String message = objectUnderTest.processFileById("meep");
+		String message = objectUnderTest.processFileById(MEEP);
 
 		verify(dbService, times(1)).getMetadataById(anyString());
 
@@ -78,7 +80,7 @@ class CpcFileServiceImplTest {
 	void testProcessFileByIdWithMipsFile() {
 		when(dbService.getMetadataById(anyString())).thenReturn(createMockedMetadata(null, false));
 
-		String message = objectUnderTest.processFileById("meep");
+		String message = objectUnderTest.processFileById(MEEP);
 
 		verify(dbService, times(1)).getMetadataById(anyString());
 
@@ -89,7 +91,7 @@ class CpcFileServiceImplTest {
 	void testProcessFileByIdWithProcessedFile() {
 		when(dbService.getMetadataById(anyString())).thenReturn(createMockedMetadata("true", true));
 
-		String message = objectUnderTest.processFileById("meep");
+		String message = objectUnderTest.processFileById(MEEP);
 
 		verify(dbService, times(1)).getMetadataById(anyString());
 
