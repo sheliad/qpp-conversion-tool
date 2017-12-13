@@ -62,4 +62,45 @@ class CpcFileServiceImplTest {
 
 		assertThat(IOUtils.toString(outcome, Charset.defaultCharset())).isEqualTo("1337");
 	}
+
+	@Test
+	void testProcessFileByIdSuccess() {
+		when(dbService.getMetadataById(anyString())).thenReturn(createMockedMetadata("true", false));
+
+		String message = objectUnderTest.processFileById("meep");
+
+		verify(dbService, times(1)).getMetadataById(anyString());
+
+		assertThat(message).isEqualTo(CpcFileServiceImpl.CPC_PROCESSED);
+	}
+
+	@Test
+	void testProcessFileByIdWithMipsFile() {
+		when(dbService.getMetadataById(anyString())).thenReturn(createMockedMetadata(null, false));
+
+		String message = objectUnderTest.processFileById("meep");
+
+		verify(dbService, times(1)).getMetadataById(anyString());
+
+		assertThat(message).isEqualTo(CpcFileServiceImpl.CPC_NOT_FOUND);
+	}
+
+	@Test
+	void testProcessFileByIdWithProcessedFile() {
+		when(dbService.getMetadataById(anyString())).thenReturn(createMockedMetadata("true", true));
+
+		String message = objectUnderTest.processFileById("meep");
+
+		verify(dbService, times(1)).getMetadataById(anyString());
+
+		assertThat(message).isEqualTo(CpcFileServiceImpl.CPC_NOT_FOUND);
+	}
+
+	Metadata createMockedMetadata(String isCpc, boolean isCpcProcessed) {
+		Metadata metadata = new Metadata();
+		metadata.setCpc(isCpc);
+		metadata.setCpcProcessed(isCpcProcessed);
+
+		return metadata;
+	}
 }

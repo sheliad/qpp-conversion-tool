@@ -20,6 +20,9 @@ public class CpcFileServiceImpl implements CpcFileService {
 	@Autowired
 	private StorageService storageService;
 
+	protected static final String CPC_PROCESSED = "The id was found and will be updated as processed.";
+	protected static final String CPC_NOT_FOUND = "The id is invalid and was not found in the database";
+
 	/**
 	 * Calls the DbService for unprocessed metadata to transform into UnprocessedCpcFileData
 	 *
@@ -57,15 +60,16 @@ public class CpcFileServiceImpl implements CpcFileService {
 	/**
 	 * Process to ensure the file is an unprocessed cpc+ file and marks the file as processed
 	 *
-	 * @param fileId
+	 * @param fileId Identifier of the CPC+ file
+	 * @return Success or failure message.
 	 */
 	public String processFileById(String fileId) {
-		String message = "The id is invalid and was not found in the database";
+		String message = CPC_NOT_FOUND;
 		Metadata metadata = dbService.getMetadataById(fileId);
 		if (metadata != null && metadata.getCpc() != null && !metadata.getCpcProcessed()) {
 			metadata.setCpcProcessed(true);
 			dbService.write(metadata);
-			message = "The id was found and will be updated as processed.";
+			message = CPC_PROCESSED;
 		}
 
 		return message;
