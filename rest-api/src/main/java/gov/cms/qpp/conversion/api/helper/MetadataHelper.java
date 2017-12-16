@@ -35,7 +35,6 @@ public class MetadataHelper {
 	 * @return
 	 */
 	public static Metadata generateMetadata(Node node, Outcome outcome) {
-		Objects.requireNonNull(node, "node");
 		Objects.requireNonNull(outcome, "outcome");
 
 		Metadata metadata = new Metadata();
