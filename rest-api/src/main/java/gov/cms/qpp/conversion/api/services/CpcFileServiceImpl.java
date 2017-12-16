@@ -46,12 +46,11 @@ public class CpcFileServiceImpl implements CpcFileService {
 	 * @return file contents as a {@link String}
 	 * @throws IOException
 	 */
-	public String getFileById(String fileId) throws IOException, NoFileInDatabaseException {
+	public String getFileById(String fileId) throws IOException {
 		Metadata metadata = dbService.getMetadataById(fileId);
 		if (isAnUnprocessedCpcFile(metadata)) {
-			String content = IOUtils.toString(storageService.getFileByLocationId(metadata.getSubmissionLocator()),
+			return IOUtils.toString(storageService.getFileByLocationId(metadata.getSubmissionLocator()),
 					Charset.defaultCharset());
-			return content;
 		} else {
 			throw new NoFileInDatabaseException(FILE_NOT_FOUND);
 		}

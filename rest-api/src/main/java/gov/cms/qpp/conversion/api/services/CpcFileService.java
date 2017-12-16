@@ -24,7 +24,7 @@ public interface CpcFileService {
 	 * @return file contents parsed as a {@link String}
 	 * @throws IOException for invalid IOUtils usage
 	 */
-	String getFileById(String fileId) throws IOException, NoFileInDatabaseException;
+	String getFileById(String fileId) throws IOException;
 
 	/**
 	 * Marks a CPC File as processed by id
