@@ -104,26 +104,16 @@ class DbServiceImplTest {
 		assertThat(metaDataList).hasSize(2 * Constants.CPC_DYNAMO_PARTITIONS);
 	}
 
-	@Test
-	void testGetFileSubmissionLocationId() {
-		when(dbMapper.load(eq(Metadata.class), anyString())).thenReturn(buildFakeMetadataWithSubmissionIdOnly());
-
-		String fakeSubmissionId = underTest.getFileSubmissionLocationId(FAKE_UUID);
-
-		verify(dbMapper, times(1)).load(any(Class.class), anyString());
-
-		assertThat(fakeSubmissionId).isEqualTo("1337");
-	}
-
-	@Test
 	void testGetMetadataById() {
-		when(dbMapper.load(eq(Metadata.class), anyString())).thenReturn(buildFakeMetadataWithSubmissionIdOnly());
+		String fakeUuid = "1337-f4ke-uuid";
 
-		Metadata metadata = underTest.getMetadataById(FAKE_UUID);
+		when(dbMapper.load(eq(Metadata.class), anyString())).thenReturn(new Metadata());
+
+		Metadata fakeMetadata = underTest.getMetadataById(fakeUuid);
 
 		verify(dbMapper, times(1)).load(any(Class.class), anyString());
 
-		assertThat(metadata).isNotNull();
+		assertThat(fakeMetadata).isNotNull();
 	}
 
 	private Metadata writeMeta() {
@@ -133,13 +123,6 @@ class DbServiceImplTest {
 	private Metadata writeMeta(Metadata metadata) {
 		CompletableFuture<Metadata> writeResult = underTest.write(metadata);
 		return writeResult.join();
-	}
-
-	private Metadata buildFakeMetadataWithSubmissionIdOnly() {
-		Metadata metadata = new Metadata();
-		metadata.setSubmissionLocator("1337");
-
-		return metadata;
 	}
 }
 

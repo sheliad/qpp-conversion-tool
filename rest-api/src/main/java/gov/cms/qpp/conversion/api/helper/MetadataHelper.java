@@ -39,24 +39,32 @@ public class MetadataHelper {
 
 		Metadata metadata = new Metadata();
 
-		metadata.setApm(findApm(node));
-		metadata.setTin(findTin(node));
-		metadata.setNpi(findNpi(node));
+		if (node != null) {
+			metadata.setApm(findApm(node));
+			metadata.setTin(findTin(node));
+			metadata.setNpi(findNpi(node));
+			metadata.setCpc(deriveCpcHash(node));
+			metadata.setCpcProcessed(false);
+		}
 
-		metadata.setCpc(isCpc(node) ? cpcHash() : null);
-		metadata.setCpcProcessed(false);
 		outcome.setStatus(metadata);
 
 		return metadata;
 	}
 
 	/**
-	 * Retrieves the random hash for CPC Field
+	 * Retrieves the random hash for the Cpc field if this is a CPC+ conversion.
 	 *
-	 * @return Cpc field randomly hashed
+	 * @return Cpc field randomly hashed or null if this isn't a CPC+ conversion
 	 */
-	private static String cpcHash() {
-		return Constants.CPC_DYNAMO_PARTITION_START + RANDOM_HASH.nextInt(Constants.CPC_DYNAMO_PARTITIONS);
+	private static String deriveCpcHash(Node node) {
+		String cpcHash = null;
+
+		if (isCpc(node)) {
+			cpcHash = Constants.CPC_DYNAMO_PARTITION_START + RANDOM_HASH.nextInt(Constants.CPC_DYNAMO_PARTITIONS);
+		}
+
+		return cpcHash;
 	}
 
 	/**

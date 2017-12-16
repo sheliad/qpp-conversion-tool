@@ -1,13 +1,11 @@
 package gov.cms.qpp.conversion.api.controllers.v1;
 
+import gov.cms.qpp.conversion.api.exceptions.NoFileInDatabaseException;
 import gov.cms.qpp.conversion.api.model.Constants;
 import gov.cms.qpp.conversion.api.model.UnprocessedCpcFileData;
 import gov.cms.qpp.conversion.api.services.CpcFileService;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.List;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,17 +60,17 @@ public class CpcFileControllerV1 {
 	@RequestMapping(method = RequestMethod.GET, value = "/get-file/{fileId}",
 			headers = {"Accept=" + Constants.V1_API_ACCEPT})
 	public ResponseEntity<String> getFileById(@PathVariable("fileId") String fileId)
-			throws IOException {
+			throws IOException, NoFileInDatabaseException {
 		API_LOG.info("CPC+ file request received");
 
-		InputStream inStream = cpcFileService.getFileById(fileId);
+		String content = cpcFileService.getFileById(fileId);
 
 		API_LOG.info("CPC+ file request succeeded");
 
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.APPLICATION_XML);
 
-		return new ResponseEntity<>(IOUtils.toString(inStream, Charset.defaultCharset()), httpHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(content, httpHeaders, HttpStatus.OK);
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/mark-file/{fileId}",

@@ -1,10 +1,13 @@
 package gov.cms.qpp.conversion.api.services;
 
+import gov.cms.qpp.conversion.api.exceptions.NoFileInDatabaseException;
 import gov.cms.qpp.conversion.api.model.Metadata;
 import gov.cms.qpp.conversion.api.model.UnprocessedCpcFileData;
-import java.io.InputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CpcFileServiceImpl implements CpcFileService {
+
+	public static final String FILE_NOT_FOUND = "File not found!";
 
 	@Autowired
 	private DbService dbService;
@@ -36,15 +41,21 @@ public class CpcFileServiceImpl implements CpcFileService {
 	}
 
 	/**
-	 * Retrieves the file location id and uses it to retrieve the file
+	 * Retrieves the file location id and retrieves the file if it is an unprocessed cpc+ file
 	 *
 	 * @param fileId {@link Metadata} identifier
-	 * @return file returned as an {@link InputStream}
+	 * @return file contents as a {@link String}
+	 * @throws IOException
 	 */
-	public InputStream getFileById(String fileId) {
-		String fileLocationId = dbService.getFileSubmissionLocationId(fileId);
-
-		return storageService.getFileByLocationId(fileLocationId);
+	public String getFileById(String fileId) throws IOException, NoFileInDatabaseException {
+		Metadata metadata = dbService.getMetadataById(fileId);
+		if (metadata != null && metadata.getCpc() != null && !metadata.getCpcProcessed()) {
+			String content = IOUtils.toString(storageService.getFileByLocationId(metadata.getSubmissionLocator()),
+					Charset.defaultCharset());
+			return content;
+		} else {
+			throw new NoFileInDatabaseException(FILE_NOT_FOUND);
+		}
 	}
 
 	/**

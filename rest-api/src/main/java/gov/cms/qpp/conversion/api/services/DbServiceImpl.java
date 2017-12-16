@@ -84,16 +84,6 @@ public class DbServiceImpl extends AnyOrderActionService<Metadata, Metadata>
 	/**
 	 * Queries the database table for a {@link Metadata} with a specific uuid
 	 *
-	 * @param uuid id to query on
-	 * @return location id of the submitted file
-	 */
-	public String getFileSubmissionLocationId(String uuid) {
-		return mapper.load(Metadata.class, uuid).getSubmissionLocator();
-	}
-
-	/**
-	 * Queries the database table for a {@link Metadata} with a specific uuid
-	 *
 	 * @param uuid Identifier to query on
 	 * @return Metadata found
 	 */

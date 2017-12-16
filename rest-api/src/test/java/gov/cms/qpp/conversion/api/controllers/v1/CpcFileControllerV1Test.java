@@ -4,9 +4,7 @@ import gov.cms.qpp.conversion.api.model.Metadata;
 import gov.cms.qpp.conversion.api.model.UnprocessedCpcFileData;
 import gov.cms.qpp.conversion.api.services.CpcFileService;
 import gov.cms.qpp.test.MockitoExtension;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,7 +16,6 @@ import org.mockito.Mock;
 import org.springframework.http.ResponseEntity;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -53,7 +50,7 @@ class CpcFileControllerV1Test {
 
 	@Test
 	void testGetFileById() throws IOException {
-		InputStream valid = new ByteArrayInputStream("1234".getBytes());
+		String valid = "1234";
 		when(cpcFileService.getFileById(anyString())).thenReturn(valid);
 
 		ResponseEntity<String> response = cpcFileControllerV1.getFileById("meep");
@@ -71,7 +68,6 @@ class CpcFileControllerV1Test {
 
 		assertThat(response.getBody()).isEqualTo("success!");
 	}
-
 
 	List<UnprocessedCpcFileData> createMockedUnprocessedDataList() {
 		Metadata metadata = new Metadata();

@@ -1,15 +1,13 @@
 package gov.cms.qpp.conversion.api.services;
 
+import gov.cms.qpp.conversion.api.exceptions.NoFileInDatabaseException;
 import gov.cms.qpp.conversion.api.model.Metadata;
 import gov.cms.qpp.test.MockitoExtension;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -54,15 +53,63 @@ class CpcFileServiceImplTest {
 
 	@Test
 	void testGetFileById() throws IOException {
-		when(dbService.getFileSubmissionLocationId(anyString())).thenReturn("abcd");
-		when(storageService.getFileByLocationId("abcd")).thenReturn(new ByteArrayInputStream("1337".getBytes()));
+		when(dbService.getMetadataById(anyString())).thenReturn(buildFakeMetadata("Cpc_1", false));
+		when(storageService.getFileByLocationId("test")).thenReturn(new ByteArrayInputStream("1337".getBytes()));
 
-		InputStream outcome = objectUnderTest.getFileById("test");
+		String outcome = objectUnderTest.getFileById("test");
 
-		verify(dbService, times(1)).getFileSubmissionLocationId(anyString());
+		verify(dbService, times(1)).getMetadataById(anyString());
 		verify(storageService, times(1)).getFileByLocationId(anyString());
 
-		assertThat(IOUtils.toString(outcome, Charset.defaultCharset())).isEqualTo("1337");
+		assertThat(outcome).isEqualTo("1337");
+	}
+
+	@Test
+	void testGetFileByIdWithMips() throws IOException {
+		when(dbService.getMetadataById(anyString())).thenReturn(buildFakeMetadata(null, false));
+		when(storageService.getFileByLocationId("test")).thenReturn(new ByteArrayInputStream("1337".getBytes()));
+
+		NoFileInDatabaseException expectedException = assertThrows(NoFileInDatabaseException.class, ()
+				-> objectUnderTest.getFileById("test"));
+
+		verify(dbService, times(1)).getMetadataById(anyString());
+
+		assertThat(expectedException).hasMessageThat().isEqualTo(CpcFileServiceImpl.FILE_NOT_FOUND);
+	}
+
+	@Test
+	void testGetFileByIdWithProcessedFile() throws IOException {
+		when(dbService.getMetadataById(anyString())).thenReturn(buildFakeMetadata("Cpc_1", true));
+		when(storageService.getFileByLocationId("test")).thenReturn(new ByteArrayInputStream("1337".getBytes()));
+
+		NoFileInDatabaseException expectedException = assertThrows(NoFileInDatabaseException.class, ()
+				-> objectUnderTest.getFileById("test"));
+
+		verify(dbService, times(1)).getMetadataById(anyString());
+
+		assertThat(expectedException).hasMessageThat().isEqualTo(CpcFileServiceImpl.FILE_NOT_FOUND);
+	}
+
+	@Test
+	void testGetFileByIdNoFile() throws IOException {
+		when(dbService.getMetadataById(anyString())).thenReturn(null);
+		when(storageService.getFileByLocationId("test")).thenReturn(new ByteArrayInputStream("1337".getBytes()));
+
+		NoFileInDatabaseException expectedException = assertThrows(NoFileInDatabaseException.class, ()
+				-> objectUnderTest.getFileById("test"));
+
+		verify(dbService, times(1)).getMetadataById(anyString());
+
+		assertThat(expectedException).hasMessageThat().isEqualTo(CpcFileServiceImpl.FILE_NOT_FOUND);
+	}
+
+	Metadata buildFakeMetadata(String isCpc, boolean isCpcProcessed) {
+		Metadata metadata = new Metadata();
+		metadata.setCpc(isCpc);
+		metadata.setCpcProcessed(isCpcProcessed);
+		metadata.setSubmissionLocator("test");
+
+		return metadata;
 	}
 
 	@Test
