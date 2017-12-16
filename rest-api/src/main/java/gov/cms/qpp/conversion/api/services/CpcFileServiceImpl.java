@@ -46,7 +46,7 @@ public class CpcFileServiceImpl implements CpcFileService {
 	 */
 	public String getFileById(String fileId) throws IOException, NoFileInDatabaseException {
 		Metadata metadata = dbService.getMetadataById(fileId);
-		if (metadata != null && metadata.getCpc() && !metadata.getCpcProcessed()) {
+		if (metadata != null && metadata.getCpc() != null && !metadata.getCpcProcessed()) {
 			String content = IOUtils.toString(storageService.getFileByLocationId(metadata.getSubmissionLocator()),
 					Charset.defaultCharset());
 			return content;

@@ -51,7 +51,7 @@ class CpcFileServiceImplTest {
 
 	@Test
 	void testGetFileById() throws IOException {
-		when(dbService.getMetadataById(anyString())).thenReturn(buildFakeMetadata(true, false));
+		when(dbService.getMetadataById(anyString())).thenReturn(buildFakeMetadata("Cpc_1", false));
 		when(storageService.getFileByLocationId("test")).thenReturn(new ByteArrayInputStream("1337".getBytes()));
 
 		String outcome = objectUnderTest.getFileById("test");
@@ -64,7 +64,7 @@ class CpcFileServiceImplTest {
 
 	@Test
 	void testGetFileByIdWithMips() throws IOException {
-		when(dbService.getMetadataById(anyString())).thenReturn(buildFakeMetadata(false, false));
+		when(dbService.getMetadataById(anyString())).thenReturn(buildFakeMetadata(null, false));
 		when(storageService.getFileByLocationId("test")).thenReturn(new ByteArrayInputStream("1337".getBytes()));
 
 		NoFileInDatabaseException expectedException = assertThrows(NoFileInDatabaseException.class, ()
@@ -77,7 +77,7 @@ class CpcFileServiceImplTest {
 
 	@Test
 	void testGetFileByIdWithProcessedFile() throws IOException {
-		when(dbService.getMetadataById(anyString())).thenReturn(buildFakeMetadata(true, true));
+		when(dbService.getMetadataById(anyString())).thenReturn(buildFakeMetadata("Cpc_1", true));
 		when(storageService.getFileByLocationId("test")).thenReturn(new ByteArrayInputStream("1337".getBytes()));
 
 		NoFileInDatabaseException expectedException = assertThrows(NoFileInDatabaseException.class, ()
@@ -101,7 +101,7 @@ class CpcFileServiceImplTest {
 		assertThat(expectedException).hasMessageThat().isEqualTo(CpcFileServiceImpl.FILE_NOT_FOUND);
 	}
 
-	Metadata buildFakeMetadata(boolean isCpc, boolean isCpcProcessed) {
+	Metadata buildFakeMetadata(String isCpc, boolean isCpcProcessed) {
 		Metadata metadata = new Metadata();
 		metadata.setCpc(isCpc);
 		metadata.setCpcProcessed(isCpcProcessed);
