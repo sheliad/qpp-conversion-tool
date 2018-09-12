@@ -14,6 +14,7 @@ public class UnprocessedCpcFileData {
 	private final Instant conversionDate;
 	private final Boolean validationSuccess;
 	private final String purpose;
+	private final String submissionSequence;
 
 	/**
 	 * Constructor to transform metadata into unprocessed cpc file data
@@ -27,6 +28,7 @@ public class UnprocessedCpcFileData {
 		this.conversionDate = metadata.getCreatedDate();
 		this.validationSuccess = metadata.getOverallStatus();
 		this.purpose = metadata.getPurpose();
+		this.submissionSequence = metadata.getNpi();
 	}
 
 	/**
@@ -83,6 +85,10 @@ public class UnprocessedCpcFileData {
 		return purpose;
 	}
 
+	public String getSubmissionSequence() {
+		return submissionSequence;
+	}
+
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(this)
@@ -92,6 +98,7 @@ public class UnprocessedCpcFileData {
 			.add("conversionDate", conversionDate)
 			.add("validationSuccess", validationSuccess)
 			.add("purpose", purpose)
+			.add("submissionSequence", submissionSequence)
 			.toString();
 	}
 }
