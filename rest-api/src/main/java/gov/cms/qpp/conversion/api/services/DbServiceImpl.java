@@ -14,6 +14,7 @@ import gov.cms.qpp.conversion.api.model.Constants;
 import gov.cms.qpp.conversion.api.model.Metadata;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,11 +90,13 @@ public class DbServiceImpl extends AnyOrderActionService<Metadata, Metadata>
 							+ Constants.DYNAMO_CPC_PROCESSED_CREATE_DATE_ATTRIBUTE + ", :cpcProcessedValue)")
 					.withExpressionAttributeValues(valueMap)
 					.withFilterExpression(Constants.DYNAMO_CREATE_DATE_ATTRIBUTE + " > :createDate")
-					.withConsistentRead(false)
-					.withLimit(LIMIT);
+					.withConsistentRead(false);
 
 				return mapper.get().queryPage(Metadata.class, metadataQuery).getResults().stream();
-			}).flatMap(Function.identity()).collect(Collectors.toList());
+			}).flatMap(Function.identity())
+				.sorted((metadata1, metaData2) -> metadata1.getCreatedDate().compareTo(metadata1.getCreatedDate()))
+				.limit(100)
+				.collect(Collectors.toList());
 		} else {
 			API_LOG.warn("Could not get unprocessed CPC+ metadata because the dynamodb mapper is absent");
 			return Collections.emptyList();
