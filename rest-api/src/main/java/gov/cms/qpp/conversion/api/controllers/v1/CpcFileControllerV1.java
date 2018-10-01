@@ -11,7 +11,7 @@ import gov.cms.qpp.conversion.api.services.CpcFileService;
  * Controller to handle cpc file data version one
  */
 @RestController
-@RequestMapping(path = "/", headers = {"Accept=" + Constants.V1_API_ACCEPT})
+@RequestMapping(path = "/cpc", headers = {"Accept=" + Constants.V1_API_ACCEPT})
 public class CpcFileControllerV1 extends SkeletalCpcFileController {
 
 	public CpcFileControllerV1(final CpcFileService cpcFileService) {

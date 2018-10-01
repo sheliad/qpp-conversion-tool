@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/cpc")
 @CrossOrigin(allowCredentials = "true")
 public abstract class SkeletalCpcFileController<T> {
 
