@@ -28,12 +28,11 @@ import org.junit.jupiter.api.Test;
 
 class JsonWrapperTest {
 
-	private ObjectWriter ow = JsonWrapper.getObjectWriterWithoutMeta();
+	private ObjectWriter ow = JsonWrapper.getObjectWriter();
 	private JsonWrapper objectObjWrapper;
 	private JsonWrapper objectStrWrapper;
 	private JsonWrapper listObjWrapper;
 	private JsonWrapper listStrWrapper;
-	private JsonWrapper unfilteredMetaWrapper;
 
 	@BeforeEach
 	void before() {
@@ -41,7 +40,6 @@ class JsonWrapperTest {
 		objectStrWrapper = new JsonWrapper();
 		listObjWrapper   = new JsonWrapper();
 		listStrWrapper   = new JsonWrapper();
-		unfilteredMetaWrapper = new JsonWrapper(false);
 	}
 
 	@Test
@@ -633,26 +631,6 @@ class JsonWrapperTest {
 				.isEqualTo(obj.findValue(shouldSerialize).asText());
 		assertThat(obj.findValue(shouldNotSerialize))
 				.isNull();
-	}
-
-	@Test
-	void metadataUnfiltered() throws IOException {
-		//setup
-		String shouldSerialize = "mawp";
-		String shouldAlsoSerialize = "metadata_meep";
-		unfilteredMetaWrapper.putString(shouldSerialize, shouldSerialize);
-		unfilteredMetaWrapper.putString(shouldAlsoSerialize, shouldAlsoSerialize);
-
-		//when
-		String json = unfilteredMetaWrapper.toString();
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode obj = mapper.readTree(json);
-
-		//then
-		assertThat(shouldSerialize)
-				.isEqualTo(obj.findValue(shouldSerialize).asText());
-		assertThat(shouldAlsoSerialize)
-				.isEqualTo(obj.findValue(shouldAlsoSerialize).asText());
 	}
 
 	@Test

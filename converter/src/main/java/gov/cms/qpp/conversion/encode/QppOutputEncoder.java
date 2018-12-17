@@ -1,13 +1,12 @@
 package gov.cms.qpp.conversion.encode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.cms.qpp.conversion.Context;
 import gov.cms.qpp.conversion.model.Encoder;
 import gov.cms.qpp.conversion.model.Node;
 import gov.cms.qpp.conversion.model.Registry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 /**
  * Top level Encoder for serializing into QPP format.
@@ -56,7 +55,7 @@ public class QppOutputEncoder extends JsonOutputEncoder {
 	 * @param leafLabel encoded json attribute name
 	 */
 	void maintainContinuity(JsonWrapper wrapper, Node node, String leafLabel) {
-		Map<String, String> otherMeta = wrapper.createMetaMap(node, leafLabel);
-		wrapper.mergeMetadata(otherMeta);
+		MetaMap otherMeta = wrapper.createMetaMap(node, leafLabel);
+		wrapper.addMetadata(otherMeta);
 	}
 }

@@ -1,16 +1,5 @@
 package gov.cms.qpp.conversion.correlation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
-import gov.cms.qpp.conversion.correlation.model.CorrelationConfig;
-import gov.cms.qpp.conversion.correlation.model.Correlation;
-import gov.cms.qpp.conversion.correlation.model.Goods;
-import gov.cms.qpp.conversion.correlation.model.PathCorrelation;
-import gov.cms.qpp.conversion.encode.JsonWrapper;
-import org.reflections.util.ClasspathHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Comparator;
@@ -18,6 +7,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.reflections.util.ClasspathHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+
+import gov.cms.qpp.conversion.correlation.model.Correlation;
+import gov.cms.qpp.conversion.correlation.model.CorrelationConfig;
+import gov.cms.qpp.conversion.correlation.model.Goods;
+import gov.cms.qpp.conversion.correlation.model.PathCorrelation;
+import gov.cms.qpp.conversion.encode.JsonWrapper;
+import gov.cms.qpp.conversion.encode.MetaMap;
 
 /**
  * Maintains associations between QPP json paths and their pre-transformation xpaths.
@@ -127,7 +130,7 @@ public class PathCorrelator {
 		String base = "$";
 		String leaf = jsonPath;
 		int lastIndex = jsonPath.lastIndexOf('.');
-		JsonWrapper metaWrapper = new JsonWrapper(wrapper, false);
+		JsonWrapper metaWrapper = new JsonWrapper(wrapper);
 
 		if (lastIndex > 0) {
 			base = jsonPath.substring(0, lastIndex);
@@ -153,15 +156,14 @@ public class PathCorrelator {
 	 * @return metadata map
 	 */
 	@SuppressWarnings("unchecked")
-	private static Map<String, String> getMetaMap(Map<String, Object> jsonMap, final String leaf) {
-		List<Map<String, String>> metaHolder = (List<Map<String, String>>) jsonMap.get("metadata_holder");
+	private static MetaMap getMetaMap(List<MetaMap> metaHolder, final String leaf) {
 		return metaHolder.stream()
 				.sorted(labeledFirst())
 				.filter(entry -> {
-					String encodeLabel = entry.get(ENCODE_LABEL);
+					String encodeLabel = entry.encodeLabel;
 					if (encodeLabel.equals(leaf)) {
 						return leaf.isEmpty()
-								|| PathCorrelator.getXpath(entry.get("template"), leaf, entry.get("nsuri")) != null;
+								|| PathCorrelator.getXpath(entry.template, leaf, entry.nsuri) != null;
 					}
 					return encodeLabel.isEmpty();
 				})
@@ -175,10 +177,10 @@ public class PathCorrelator {
 	 *
 	 * @return a comparator that will enact prioritization
 	 */
-	private static Comparator<Map<String, String>> labeledFirst() {
-		return (Map<String, String> map1, Map<String, String> map2) -> {
-			String map1Label = map1.get(ENCODE_LABEL);
-			String map2Label = map2.get(ENCODE_LABEL);
+	private static Comparator<MetaMap> labeledFirst() {
+		return (MetaMap map1, MetaMap map2) -> {
+			String map1Label = map1.encodeLabel;
+			String map2Label = map2.encodeLabel;
 			
 			return Boolean.compare(map1Label.isEmpty(), map2Label.isEmpty());
 		};

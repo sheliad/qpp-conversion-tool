@@ -1,21 +1,14 @@
 package gov.cms.qpp.conversion.encode;
 
-import gov.cms.qpp.conversion.InputStreamSupplierSource;
-import gov.cms.qpp.conversion.Source;
-import gov.cms.qpp.conversion.model.Node;
-import gov.cms.qpp.conversion.util.FormatHelper;
-
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,37 +23,37 @@ import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
+import gov.cms.qpp.conversion.InputStreamSupplierSource;
+import gov.cms.qpp.conversion.Source;
+import gov.cms.qpp.conversion.model.Node;
+import gov.cms.qpp.conversion.util.FormatHelper;
+
 /**
  * Manages building a "simple" object of JSON conversion.
  * JSON renderers can convert maps and list into JSON Strings.
  * This class is a wrapper around a list/map impl.
  */
 public class JsonWrapper {
-	private static final String METADATA_HOLDER = "metadata_holder";
 	private static final String METADATA_FILTER_LABEL = "exclude-metadata";
 	private ObjectWriter ow;
 	private Map<String, Object> object;
 	private List<Object> list;
+	private final List<MetaMap> meta = new ArrayList<>();
 
 	public JsonWrapper() {
-		this(true);
 	}
 
-	public JsonWrapper(boolean filterMeta) {
-		ow = filterMeta ? getObjectWriter() : getObjectWriterWithoutMeta();
-	}
-
-	public JsonWrapper(JsonWrapper wrapper, boolean filterMeta) {
-		this(filterMeta);
+	public JsonWrapper(JsonWrapper wrapper) {
 		if (wrapper.isObject()) {
 			this.object = new LinkedHashMap<>(wrapper.object);
 		} else {
 			this.list = new LinkedList<>(wrapper.list);
 		}
-	}
-
-	protected JsonWrapper(JsonWrapper jsonWrapper) {
-		this(jsonWrapper, true);
+		if (!wrapper.meta.isEmpty()) {
+			wrapper.meta.forEach(clone -> {
+				meta.add(new MetaMap(clone));
+			});
+		}
 	}
 
 	/**
@@ -75,13 +68,11 @@ public class JsonWrapper {
 		return om.writer().with(getPrinter());
 	}
 
-	/**
-	 * Static factory that creates {@link com.fasterxml.jackson.databind.ObjectWriter}s removing metadata.
-	 *
-	 * @return utility that will allow client to serialize wrapper contents as json
-	 */
-	static ObjectWriter getObjectWriterWithoutMeta() {
-		return new ObjectMapper().writer().with(getPrinter());
+	private static DefaultPrettyPrinter getPrinter() {
+		DefaultIndenter withLinefeed = new DefaultIndenter("  ", "\n");
+		DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
+		printer.indentObjectsWith(withLinefeed);
+		return printer;
 	}
 
 	/**
@@ -94,13 +85,6 @@ public class JsonWrapper {
 		filters.addFilter(METADATA_FILTER_LABEL, new MetadataPropertyFilter());
 		om.setAnnotationIntrospector(new JsonWrapperIntrospector(METADATA_FILTER_LABEL));
 		om.setFilterProvider(filters);
-	}
-
-	private static DefaultPrettyPrinter getPrinter() {
-		DefaultIndenter withLinefeed = new DefaultIndenter("  ", "\n");
-		DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
-		printer.indentObjectsWith(withLinefeed);
-		return printer;
 	}
 
 	/**
@@ -596,49 +580,34 @@ public class JsonWrapper {
 	}
 
 	void attachMetadata(Node node) {
-		addMetaMap(createMetaMap(node, ""));
+		meta.add(createMetaMap(node, ""));
 	}
 
-	Map<String,String> createMetaMap(Node node, String encodeLabel) {
-		Map<String, String> metaMap = new HashMap<>();
-		metaMap.put("encodeLabel", encodeLabel);
-		metaMap.put("nsuri", node.getDefaultNsUri());
-		metaMap.put("template", node.getType().name());
-		metaMap.put("path", node.getOrComputePath());
+	MetaMap createMetaMap(Node node, String encodeLabel) {
+		MetaMap metaMap = new MetaMap();
+		metaMap.encodeLabel = encodeLabel;
+		metaMap.nsuri = node.getDefaultNsUri();
+		metaMap.template = node.getType().name();
+		metaMap.path = node.getOrComputePath();
 		if (node.getLine() != Node.DEFAULT_LOCATION_NUMBER) {
-			metaMap.put("line", String.valueOf(node.getLine()));
+			metaMap.line = String.valueOf(node.getLine());
 		}
 		if (node.getColumn() != Node.DEFAULT_LOCATION_NUMBER) {
-			metaMap.put("column", String.valueOf(node.getColumn()));
+			metaMap.column = String.valueOf(node.getColumn());
 		}
 		return metaMap;
 	}
 
-	private void addMetaMap(Map<String, String> metaMap) {
-		Set<Map<String, String>> metaHolder = this.getMetadataHolder();
-		metaHolder.add(metaMap);
-	}
-
-	private Set<Map<String, String>> getMetadataHolder() {
-		Set<Map<String, String>> returnValue = this.getValue(METADATA_HOLDER);
-		if (returnValue == null) {
-			returnValue = new LinkedHashSet<>();
-			this.putObject(METADATA_HOLDER, returnValue);
-		}
-		return returnValue;
-	}
-
 	void mergeMetadata(JsonWrapper otherWrapper, String encodeLabel) {
-		Set<Map<String, String>> meta = this.getMetadataHolder();
-		Set<Map<String, String>> otherMeta = otherWrapper.getMetadataHolder();
+		List<MetaMap> otherMeta = otherWrapper.meta;
 		otherMeta.forEach(other -> {
-			other.put("encodeLabel", encodeLabel);
-			meta.add(other);
+			other.encodeLabel = encodeLabel;
+			addMetadata(other);
 		});
 	}
 
-	void mergeMetadata(Map<String, String> otherMeta) {
-		this.getMetadataHolder().add(otherMeta);
+	void addMetadata(MetaMap meta) {
+		this.meta.add(meta);
 	}
 
 }
